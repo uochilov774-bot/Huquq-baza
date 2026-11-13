@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Huquq Baza Ulug'bek — Huquqiy Ta'lim Platformasi</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Merriweather (huquqiy-akademik uslub uchun) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@700;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome ikonkalar -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Merriweather', 'serif'],
+                    },
+                    colors: {
+                        navy: {
+                            800: '#102a43',
+                            900: '#0a192f',
+                            950: '#061020',
+                        },
+                        gold: {
+                            400: '#fbbf24',
+                            500: '#d97706',
+                            600: '#b45309',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Maxsus skrollbar va silliq animatsiyalar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
+
+    <!-- Bildirishnoma (Toast) konteyneri -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
+
+    <!-- Yuqori Sarlavha (Header & Branding) -->
+    <header class="bg-navy-900 text-white shadow-xl border-b-4 border-amber-500 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between py-4 gap-4">
+                <!-- Logo va Nom -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3.5 cursor-pointer" onclick="switchTab('home')">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-navy-950 shadow-lg shrink-0">
+                            <i class="fa-solid fa-scale-balanced text-2xl"></i>
+                        </div>
+                        <div>
+                            <h1 class="font-serif text-xl sm:text-2xl font-black tracking-wide text-white leading-tight">
+                                Huquq Baza <span class="text-amber-400">Ulug'bek</span>
+                            </h1>
+                            <p class="text-xs sm:text-sm text-slate-300 font-medium">Huquqshunoslik fanidan interaktiv ta'lim va metodik portal</p>
+                        </div>
+                    </div>
+                    <!-- Mobil menyu tugmasi -->
+                    <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="md:hidden p-2.5 rounded-lg bg-navy-800 text-amber-400 hover:bg-slate-800 focus:outline-none">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- Tezkor Amallar Tugmalari -->
+                <div class="hidden md:flex items-center gap-3">
+                    <button onclick="openAddModal('material')" class="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-navy-950 font-semibold px-4 py-2.5 rounded-xl transition shadow-md text-sm">
+                        <i class="fa-solid fa-plus-circle"></i>
+                        <span>Material / E'lon qo'shish</span>
+                    </button>
+                    <button onclick="switchTab('tests')" class="flex items-center gap-2 bg-navy-800 hover:bg-slate-700 text-white border border-slate-600 font-medium px-4 py-2.5 rounded-xl transition text-sm">
+                        <i class="fa-solid fa-file-circle-check text-amber-400"></i>
+                        <span>Test tuzish</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Navigatsiya Menyusi (Tabs) -->
+            <nav id="main-nav" class="hidden md:flex items-center gap-1 pb-2 overflow-x-auto">
+                <button onclick="switchTab('home')" data-tab="home" class="nav-btn active-tab flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition whitespace-nowrap">
+                    <i class="fa-solid fa-landmark"></i>
+                    <span>Bosh sahifa / E'lonlar</span>
+                </button>
+                <button onclick="switchTab('materials')" data-tab="materials" class="nav-btn flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition whitespace-nowrap">
+                    <i class="fa-solid fa-book-open"></i>
+                    <span>Ma'ruzalar va Materiallar</span>
+                </button>
+                <button onclick="switchTab('presentations')" data-tab="presentations" class="nav-btn flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition whitespace-nowrap">
+                    <i class="fa-solid fa-display"></i>
+                    <span>Taqdimotlar</span>
+                </button>
+                <button onclick="switchTab('tests')" data-tab="tests" class="nav-btn flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition whitespace-nowrap">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span>Testlar Yaratish va Yechish</span>
+                </button>
+                <button onclick="switchTab('cases')" data-tab="cases" class="nav-btn flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition whitespace-nowrap">
+                    <i class="fa-solid fa-gavel"></i>
+                    <span>Interaktiv Mashqlar / Kazuslar</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Asosiy Kontent Maydoni -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ========================================================= -->
+        <!-- 1. BOSH SAHIFA VA E'LONLAR BO'LIMI -->
+        <!-- ========================================================= -->
+        <section id="tab-home" class="tab-content fade-in space-y-8">
+            <!-- Hero Banner -->
+            <div class="bg-gradient-to-r from-navy-900 via-navy-800 to-slate-900 rounded-2xl p-6 sm:p-10 text-white shadow-xl relative overflow-hidden border border-slate-700">
+                <div class="relative z-10 max-w-3xl">
+                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-semibold uppercase tracking-wider mb-4">
+                        <i class="fa-solid fa-award"></i> Rasmiy Ta'lim Resursi
+                    </span>
+                    <h2 class="font-serif text-2xl sm:text-4xl font-bold mb-4 leading-snug">
+                        Huquqiy bilimlarni zamonaviy va interaktiv usulda o'rganing!
+                    </h2>
+                    <p class="text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
+                        Ushbu platforma o'qituvchi va o'quvchilar uchun yagona baza bo'lib, unda O'zbekiston Respublikasi Konstitutsiyasi, kodekslar bo'yicha ma'ruzalar, dars taqdimotlari, onlayn testlar hamda amaliy huquqiy kazuslar jamlangan.
+                    </p>
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="switchTab('materials')" class="bg-amber-500 hover:bg-amber-400 text-navy-950 font-bold px-5 py-3 rounded-xl transition shadow-md flex items-center gap-2 text-sm">
+                            <i class="fa-solid fa-book-bookmark"></i> Darslarni boshlash
+                        </button>
+                        <button onclick="switchTab('tests')" class="bg-white/10 hover:bg-white/20 text-white border border-white/20 font-semibold px-5 py-3 rounded-xl transition flex items-center gap-2 text-sm">
+                            <i class="fa-solid fa-pen-to-square"></i> Bilimni sinash (Test)
+                        </button>
+                    </div>
+                </div>
+                <i class="fa-solid fa-scale-balanced text-[180px] text-white/5 absolute -right-6 -bottom-8 pointer-events-none"></i>
+            </div>
+
+            <!-- Statistika Kartochkalari -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center text-xl shrink-0">
+                        <i class="fa-solid fa-book"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 font-medium">Ma'ruzalar</p>
+                        <p id="stat-materials" class="text-2xl font-bold text-navy-900">0</p>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shrink-0">
+                        <i class="fa-solid fa-person-chalkboard"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 font-medium">Taqdimotlar</p>
+                        <p id="stat-presentations" class="text-2xl font-bold text-navy-900">0</p>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0">
+                        <i class="fa-solid fa-circle-question"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 font-medium">Test savollari</p>
+                        <p id="stat-tests" class="text-2xl font-bold text-navy-900">0</p>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl shrink-0">
+                        <i class="fa-solid fa-gavel"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 font-medium">Huquqiy kazuslar</p>
+                        <p id="stat-cases" class="text-2xl font-bold text-navy-900">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- E'lonlar va Yangiliklar Bo'limi -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-6">
+                    <div>
+                        <h3 class="text-xl font-bold text-navy-900 flex items-center gap-2">
+                            <i class="fa-solid fa-bullhorn text-amber-500"></i> Muhim E'lonlar va Dars Jadvali
+                        </h3>
+                        <p class="text-sm text-slate-500 mt-1">O'quv jarayoniga oid so'nggi xabarlar va topshiriqlar</p>
+                    </div>
+                    <button onclick="openAddModal('announcement')" class="bg-navy-900 hover:bg-navy-800 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2 self-start sm:self-auto">
+                        <i class="fa-solid fa-plus"></i> Yangi e'lon qo'shish
+                    </button>
+                </div>
+
+                <div id="announcements-list" class="space-y-4">
+                    <!-- Dinamik e'lonlar shu yerga yuklanadi -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- 2. MA'RUZALAR VA MATERIALLAR BO'LIMI -->
+        <!-- ========================================================= -->
+        <section id="tab-materials" class="tab-content hidden fade-in space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div>
+                    <h2 class="text-2xl font-serif font-bold text-navy-900">Ma'ruzalar va O'quv Materiallari</h2>
+                    <p class="text-sm text-slate-500 mt-1">Huquq sohalari bo'yicha nazariy matnlar, konspektlar va me'yoriy hujjatlar</p>
+                </div>
+                <button onclick="openAddModal('material')" class="bg-amber-500 hover:bg-amber-400 text-navy-950 font-bold px-5 py-3 rounded-xl transition shadow-sm flex items-center gap-2 text-sm self-start md:self-auto">
+                    <i class="fa-solid fa-file-circle-plus"></i> Yangi ma'ruza joylash
+                </button>
+            </div>
+
+            <!-- Qidiruv va Filtr Paneli -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-grow">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400"></i>
+                    <input type="text" id="material-search" oninput="renderMaterials()" placeholder="Mavzu yoki kalit so'z bo'yicha qidirish..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm">
+                </div>
+                <select id="material-filter" onchange="renderMaterials()" class="px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    <option value="all">Barcha huquq sohalari</option>
+                    <option value="Konstitutsiyaviy huquq">Konstitutsiyaviy huquq</option>
+                    <option value="Fuqarolik huquqi">Fuqarolik huquqi</option>
+                    <option value="Jinoyat huquqi">Jinoyat huquqi</option>
+                    <option value="Ma'muriy huquq">Ma'muriy huquq</option>
+                    <option value="Mehnat va Ta'lim huquqi">Mehnat va Ta'lim huquqi</option>
+                </select>
+            </div>
+
+            <!-- Materiallar Ro'yxati -->
+            <div id="materials-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Dinamik kartochkalar -->
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- 3. TAQDIMOTLAR (PRESENTATIONS) BO'LIMI -->
+        <!-- ========================================================= -->
+        <section id="tab-presentations" class="tab-content hidden fade-in space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div>
+                    <h2 class="text-2xl font-serif font-bold text-navy-900">Dars Taqdimotlari (Slaydlar)</h2>
+                    <p class="text-sm text-slate-500 mt-1">Dars jarayonida namoyish etish uchun tayyorlangan ko'rgazmali slaydlar va havolalar</p>
+                </div>
+                <button onclick="openAddModal('presentation')" class="bg-navy-900 hover:bg-navy-800 text-white font-semibold px-5 py-3 rounded-xl transition shadow-sm flex items-center gap-2 text-sm self-start md:self-auto">
+                    <i class="fa-solid fa-plus"></i> Taqdimot qo'shish
+                </button>
+            </div>
+
+            <div id="presentations-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Taqdimot kartochkalari -->
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- 4. TESTLAR YARATISH VA YECHISH BO'LIMI -->
+        <!-- ========================================================= -->
+        <section id="tab-tests" class="tab-content hidden fade-in space-y-6">
+            <!-- Ichki Rejim Tanlash (Test Yechish / Yangi Test Tuzish) -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-serif font-bold text-navy-900">Onlayn Test Tizimi</h2>
+                    <p class="text-sm text-slate-500 mt-1">O'qituvchilar yangi savollar qo'shishi, o'quvchilar esa bilimini tekshirishi mumkin</p>
+                </div>
+                <div class="flex bg-slate-100 p-1.5 rounded-xl self-start sm:self-auto">
+                    <button id="btn-mode-solve" onclick="switchTestMode('solve')" class="px-4 py-2 rounded-lg text-sm font-bold bg-navy-900 text-white shadow transition">
+                        <i class="fa-solid fa-play mr-1.5"></i> Test yechish
+                    </button>
+                    <button id="btn-mode-create" onclick="switchTestMode('create')" class="px-4 py-2 rounded-lg text-sm font-bold text-slate-600 hover:text-navy-900 transition">
+                        <i class="fa-solid fa-plus-circle mr-1.5"></i> Test tuzish
+                    </button>
+                </div>
+            </div>
+
+            <!-- A) TEST YECHISH REJIMI -->
+            <div id="test-solve-area" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+                <!-- Test boshlanishidan oldingi ekran -->
+                <div id="quiz-start-screen" class="text-center max-w-xl mx-auto py-8 space-y-5">
+                    <div class="w-20 h-20 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-4xl mx-auto">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-navy-900">Huquq fanidan bilimingizni sinang</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        Bazadagi barcha mavzular bo'yicha tuzilgan test savollariga javob bering. Har bir savolda 4 tadan variant mavjud. Yakunda natijangiz va xatolar tahlili ko'rsatiladi.
+                    </p>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 inline-block">
+                        <span class="text-sm font-semibold text-slate-700">Jami mavjud savollar soni: </span>
+                        <span id="quiz-total-count" class="text-lg font-bold text-navy-900">0</span> ta
+                    </div>
+                    <div>
+                        <button onclick="startQuiz()" class="bg-amber-500 hover:bg-amber-400 text-navy-950 font-bold px-8 py-3.5 rounded-xl shadow-md transition text-base">
+                            Testni Boshlash <i class="fa-solid fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Faol test jarayoni -->
+                <div id="quiz-active-screen" class="hidden max-w-2xl mx-auto space-y-6">
+                    <div class="flex items-center justify-between text-sm font-semibold text-slate-500">
+                        <span id="quiz-progress-text">Savol: 1 / 5</span>
+                        <span id="quiz-category-badge" class="px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs">Konstitutsiyaviy huquq</span>
+                    </div>
+                    <!-- Progress bar -->
+                    <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                        <div id="quiz-progress-bar" class="bg-amber-500 h-full transition-all duration-300" style="width: 20%"></div>
+                    </div>
+
+                    <h3 id="quiz-question-text" class="text-lg sm:text-xl font-bold text-navy-900 leading-snug pt-2">
+                        Savol matni bu yerda chiqadi?
+                    </h3>
+
+                    <div id="quiz-options-container" class="space-y-3">
+                        <!-- Variantlar -->
+                    </div>
+
+                    <div class="flex justify-between items-center pt-4 border-t border-slate-100">
+                        <button onclick="resetQuiz()" class="text-sm text-slate-500 hover:text-red-600 font-medium">
+                            <i class="fa-solid fa-rotate-left mr-1"></i> Bekor qilish
+                        </button>
+                        <button id="quiz-next-btn" onclick="nextQuestion()" disabled class="bg-navy-900 disabled:bg-slate-300 text-white font-semibold px-6 py-2.5 rounded-xl transition">
+                            Keyingi savol <i class="fa-solid fa-chevron-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Test natijasi ekrani -->
+                <div id="quiz-result-screen" class="hidden max-w-2xl mx-auto space-y-6">
+                    <div class="text-center bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                        <div id="result-icon" class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl mx-auto mb-3">
+                            <i class="fa-solid fa-trophy"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-navy-900">Test Yakunlandi!</h3>
+                        <p id="result-score-text" class="text-lg font-semibold text-slate-700 mt-2">Natija: 4 / 5 (80%)</p>
+                        <p id="result-feedback" class="text-sm text-slate-500 mt-1">Ajoyib natija! Huquqiy bilimlaringiz yuqori darajada.</p>
+                        <button onclick="startQuiz()" class="mt-5 bg-amber-500 hover:bg-amber-400 text-navy-950 font-bold px-6 py-2.5 rounded-xl transition text-sm">
+                            <i class="fa-solid fa-rotate-right mr-1.5"></i> Qayta topshirish
+                        </button>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-navy-900 mb-3">Javoblar tahlili:</h4>
+                        <div id="quiz-review-list" class="space-y-3">
+                            <!-- Tahlil -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- B) YANGI TEST TUZISH REJIMI -->
+            <div id="test-create-area" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Test qo'shish formasi -->
+                <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="text-lg font-bold text-navy-900 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-pen-ruler text-amber-500"></i> Yangi Test Savoli Qo'shish
+                    </h3>
+                    <form id="create-test-form" onsubmit="handleCreateTest(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Huquq sohasi (Bo'lim)</label>
+                            <select id="new-test-category" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                                <option value="Konstitutsiyaviy huquq">Konstitutsiyaviy huquq</option>
+                                <option value="Fuqarolik huquqi">Fuqarolik huquqi</option>
+                                <option value="Jinoyat huquqi">Jinoyat huquqi</option>
+                                <option value="Ma'muriy huquq">Ma'muriy huquq</option>
+                                <option value="Mehnat va Ta'lim huquqi">Mehnat va Ta'lim huquqi</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Savol matni</label>
+                            <textarea id="new-test-question" rows="2" required placeholder="Masalan: O'zbekiston Respublikasining yangi tahrirdagi Konstitutsiyasi qachon qabul qilingan?" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">A variant</label>
+                                <input type="text" id="opt-0" required placeholder="1-javob varianti" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">B variant</label>
+                                <input type="text" id="opt-1" required placeholder="2-javob varianti" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">C variant</label>
+                                <input type="text" id="opt-2" required placeholder="3-javob varianti" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">D variant</label>
+                                <input type="text" id="opt-3" required placeholder="4-javob varianti" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">To'g'ri javobni belgilang</label>
+                            <select id="new-test-correct" required class="w-full px-4 py-2.5 rounded-xl border border-emerald-300 bg-emerald-50/50 text-sm font-semibold text-emerald-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                <option value="0">A variant to'g'ri</option>
+                                <option value="1">B variant to'g'ri</option>
+                                <option value="2">C variant to'g'ri</option>
+                                <option value="3">D variant to'g'ri</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="w-full bg-navy-900 hover:bg-navy-800 text-white font-bold py-3 rounded-xl transition shadow-md">
+                            <i class="fa-solid fa-save mr-2"></i> Savolni Test Bazaga Saqlash
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Mavjud savollar ro'yxati (Boshqarish uchun) -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col max-h-[600px]">
+                    <h3 class="text-base font-bold text-navy-900 mb-3 flex items-center justify-between">
+                        <span>Bazadagi savollar</span>
+                        <span id="bank-count-badge" class="text-xs bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full">0 ta</span>
+                    </h3>
+                    <div id="test-bank-list" class="space-y-3 overflow-y-auto pr-1 flex-grow">
+                        <!-- Savollar ro'yxati -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- 5. INTERAKTIV MASHQLAR / KAZUSLAR BO'LIMI -->
+        <!-- ========================================================= -->
+        <section id="tab-cases" class="tab-content hidden fade-in space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div>
+                    <h2 class="text-2xl font-serif font-bold text-navy-900">Huquqiy Kazuslar va Amaliy Vaziyatlar</h2>
+                    <p class="text-sm text-slate-500 mt-1">Hayotiy vaziyatlarni qonun moddalari asosida tahlil qiling va yechimini tekshiring</p>
+                </div>
+                <button onclick="openAddModal('case')" class="bg-amber-500 hover:bg-amber-400 text-navy-950 font-bold px-5 py-3 rounded-xl transition shadow-sm flex items-center gap-2 text-sm self-start md:self-auto">
+                    <i class="fa-solid fa-plus"></i> Yangi kazus qo'shish
+                </button>
+            </div>
+
+            <div id="cases-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Kazus kartochkalari -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Pastki Qism (Footer) -->
+    <footer class="bg-navy-950 text-slate-400 border-t border-slate-800 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-scale-balanced text-amber-500 text-xl"></i>
+                <span class="font-serif font-bold text-white">Huquq Baza Ulug'bek</span>
+            </div>
+            <p class="text-xs text-center sm:text-right">
+                &copy; 2026 Huquq fani o'quv-metodik platformasi. Barcha ma'lumotlar brauzer xotirasida avtomatik saqlanadi.
+            </p>
+        </div>
+    </footer>
+
+    <!-- ========================================================= -->
+    <!-- MODALLAR (Yangi material qo'shish, O'qish va Taqdimot ko'rish) -->
+    <!-- ========================================================= -->
+
+    <!-- 1. Universal Qo'shish Modali (Ma'ruza / Taqdimot / E'lon / Kazus) -->
+    <div id="add-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden fade-in">
+            <div class="bg-navy-900 text-white px-6 py-4 flex items-center justify-between">
+                <h3 id="modal-title" class="font-bold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-folder-plus text-amber-400"></i>
+                    <span>Yangi material qo'shish</span>
+                </h3>
+                <button onclick="closeAddModal()" class="text-slate-300 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <form id="universal-add-form" onsubmit="handleUniversalSubmit(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Bo'lim turini tanlang</label>
+                    <select id="add-type" onchange="updateAddModalFields()" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm font-semibold text-navy-900">
+                        <option value="material">Ma'ruza / O'quv materiali</option>
+                        <option value="presentation">Taqdimot (Slayd / Havola)</option>
+                        <option value="announcement">E'lon / Dars jadvali xabari</option>
+                        <option value="case">Huquqiy kazus (Amaliy mashq)</option>
+                    </select>
+                </div>
+
+                <div id="field-category-wrap">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Huquq sohasi</label>
+                    <select id="add-category" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm">
+                        <option value="Konstitutsiyaviy huquq">Konstitutsiyaviy huquq</option>
+                        <option value="Fuqarolik huquqi">Fuqarolik huquqi</option>
+                        <option value="Jinoyat huquqi">Jinoyat huquqi</option>
+                        <option value="Ma'muriy huquq">Ma'muriy huquq</option>
+                        <option value="Mehnat va Ta'lim huquqi">Mehnat va Ta'lim huquqi</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label id="label-title" class="block text-sm font-semibold text-slate-700 mb-1">Mavzu sarlavhasi</label>
+                    <input type="text" id="add-title" required placeholder="Sarlavhani kiriting..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label id="label-content" class="block text-sm font-semibold text-slate-700 mb-1">Asosiy matn / Tavsif</label>
+                    <textarea id="add-content" rows="4" required placeholder="Batafsil ma'lumot yozing..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"></textarea>
+                </div>
+
+                <div id="field-extra-wrap" class="hidden">
+                    <label id="label-extra" class="block text-sm font-semibold text-slate-700 mb-1">Qo'shimcha ma'lumot</label>
+                    <textarea id="add-extra" rows="3" placeholder="Huquqiy yechim yoki taqdimot havolasi..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"></textarea>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeAddModal()" class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50">
+                        Bekor qilish
+                    </button>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-navy-950 font-bold text-sm shadow">
+                        Saqlash
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. To'liq O'qish / Taqdimot Namoyish Modali -->
+    <div id="viewer-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden fade-in">
+            <div class="bg-navy-900 text-white px-6 py-4 flex items-center justify-between border-b-2 border-amber-500">
+                <div class="flex items-center gap-2.5">
+                    <span id="viewer-badge" class="px-2.5 py-0.5 rounded bg-amber-500 text-navy-950 text-xs font-bold">Konstitutsiyaviy huquq</span>
+                    <span id="viewer-date" class="text-xs text-slate-300">13.11.2026</span>
+                </div>
+                <button onclick="closeViewerModal()" class="text-slate-300 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6 sm:p-8 overflow-y-auto space-y-5">
+                <h2 id="viewer-title" class="font-serif text-2xl sm:text-3xl font-bold text-navy-900 leading-snug">
+                    Mavzu nomi
+                </h2>
+                <div id="viewer-body" class="text-slate-700 text-base leading-relaxed whitespace-pre-line bg-slate-50 p-5 rounded-xl border border-slate-200">
+                    Matn...
+                </div>
+                <div id="viewer-link-box" class="hidden bg-amber-50 border border-amber-200 p-4 rounded-xl flex items-center justify-between gap-4">
+                    <div class="text-sm text-amber-900">
+                        <p class="font-bold">Taqdimot fayli / Tashqi havola:</p>
+                        <p id="viewer-link-text" class="text-xs break-all mt-0.5 text-amber-700"></p>
+                    </div>
+                    <a id="viewer-external-btn" href="#" target="_blank" rel="noopener noreferrer" class="shrink-0 bg-navy-900 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-navy-800">
+                        Ochish <i class="fa-solid fa-arrow-up-right-from-square ml-1"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="bg-slate-50 px-6 py-3.5 border-t border-slate-200 flex justify-end">
+                <button onclick="closeViewerModal()" class="bg-navy-900 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-navy-800">
+                    Yopish
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Mantiqiy Qismi -->
+    <script>
+        // =============================================================
+        // 1. BOSHLANG'ICH MA'LUMOTLAR (O'zbekiston huquq tizimi asosida)
+        // =============================================================
+        const DEFAULT_DATA = {
+            announcements: [
+                {
+                    id: 1,
+                    title: "Yangi o'quv haftasi: O'zbekiston Respublikasi Konstitutsiyasi haftaligi",
+                    content: "Hurmatli o'quvchilar! Ushbu haftada Konstitutsiyaning inson huquq va erkinliklariga bag'ishlangan II bo'limi bo'yicha ochiq dars va onlayn test sinovi o'tkaziladi. Barchangizni 'Testlar' bo'limida faol qatnashishga chorlaymiz.",
+                    date: "13.11.2026",
+                    important: true
+                },
+                {
+                    id: 2,
+                    title: "Huquqiy kazuslar bo'yicha amaliy mashg'ulot",
+                    content: "Juma kuni soat 14:00 da Fuqarolik va Ma'muriy huquq sohalariga oid hayotiy kazuslar tahlili bo'lib o'tadi. 'Kazuslar' bo'limidagi masalalarni oldindan ko'rib chiqing.",
+                    date: "11.11.2026",
+                    important: false
+                }
+            ],
+            materials: [
+                {
+                    id: 101,
+                    category: "Konstitutsiyaviy huquq",
+                    title: "O'zbekiston Respublikasi Konstitutsiyasi — davlatning Asosiy Qonuni",
+                    content: "Konstitutsiya davlatning oliy yuridik kuchga ega bo'lgan asosiy qonunidir. 2023-yil 30-aprelda umumxalq referendumida qabul qilingan yangi tahrirdagi Konstitutsiya 6 bo'lim, 27 bob va 155 moddadan iborat.\n\nAsosiy tamoyillar:\n1. O'zbekiston — suveren, demokratik, huquqiy, ijtimoiy va dunyoviy davlat (1-modda).\n2. Xalq davlat hokimiyatining birdan-bir manbaidir (7-modda).\n3. Inson sha'ni va qadr-qimmati daxlsizdir. Hech narsa ularni kamsitish uchun asos bo'lishi mumkin emas (26-modda).",
+                    date: "10.11.2026"
+                },
+                {
+                    id: 102,
+                    category: "Fuqarolik huquqi",
+                    title: "Fuqarolarning muomala layoqati va voyaga yetmaganlar huquqlari",
+                    content: "Fuqarolik kodeksining 22-moddasiga ko'ra, fuqaroning o'z harakatlari bilan fuqarolik huquqlariga ega bo'lish va ularni amalga oshirish, o'zi uchun fuqarolik burchlarini vujudga keltirish va ularni bajarish layoqati (muomala layoqati) fuqaro voyaga yetgach, ya'ni o'n sakkiz yoshga to'lgach to'la hajmda vujudga keladi.\n\n14 yoshdan 18 yoshgacha bo'lgan voyaga yetmaganlar o'z ish haqi, stipendiyasi va boshqa daromadlarini mustaqil tasarruf etish, mualliflik huquqlarini amalga oshirish hamda mayda maishiy bitimlar tuzish huquqiga ega.",
+                    date: "08.11.2026"
+                },
+                {
+                    id: 103,
+                    category: "Ma'muriy huquq",
+                    title: "Ma'muriy huquqbuzarlik tushunchasi va ma'muriy jazo turlari",
+                    content: "Ma'muriy javobgarlik to'g'risidagi kodeksga binoan, ma'muriy javobgarlikka huquqbuzarlik sodir etgan paytda 16 yoshga to'lgan shaxslar tortiladi.\n\nMa'muriy jazo turlari:\n• Jarima;\n• Ma'muriy huquqbuzarlikni sodir etish quroli yoki bevosita shunday narsa bo'lgan ashyoni haqini to'lash sharti bilan olib qo'yish;\n• Musodara qilish;\n• Maxsus huquqdan (masalan, transport vositasini boshqarish huquqidan) mahrum etish;\n• Ma'muriy qamoqqa olish.",
+                    date: "05.11.2026"
+                },
+                {
+                    id: 104,
+                    category: "Mehnat va Ta'lim huquqi",
+                    title: "O'quvchilarning ta'lim olish huquqi va majburiyatlari",
+                    content: "O'zbekiston Respublikasining 'Ta'lim to'g'risida'gi Qonuni va Konstitutsiyaning 50-moddasiga muvofiq har kim ta'lim olish huquqiga ega. Davlat uzluksiz ta'lim tizimi, uning har xil turlari va shakllari, davlat va nodavlat ta'lim tashkilotlari rivojlanishini ta'minlaydi.\n\nO'quvchilarning majburiyatlari: ta'lim tashkilotining ichki tartib-qoidalariga rioya qilish, o'qituvchilar va tengdoshlarining sha'ni hamda qadr-qimmatini hurmat qilish, o'quv dasturlarini o'zlashtirish.",
+                    date: "02.11.2026"
+                }
+            ],
+            presentations: [
+                {
+                    id: 201,
+                    category: "Konstitutsiyaviy huquq",
+                    title: "1-Taqdimot: Davlat hokimiyatining bo'linish prinsipi",
+                    content: "Slaydlar tarkibi:\n• 1-slayd: Davlat hokimiyati tushunchasi\n• 2-slayd: Qonun chiqaruvchi hokimiyat (Oliy Majlis)\n• 3-slayd: Ijro etuvchi hokimiyat (Vazirlar Mahkamasi)\n• 4-slayd: Sud hokimiyati va uning mustaqilligi\n• 5-slayd: O'zaro tiyib turish va manfaatlar muvozanati mexanizmi.",
+                    link: "https://constitution.uz",
+                    date: "12.11.2026"
+                },
+                {
+                    id: 202,
+                    category: "Jinoyat huquqi",
+                    title: "2-Taqdimot: Jinoyat tarkibi va aybsizlik prezumpsiyasi",
+                    content: "Slaydlar tarkibi:\n• 1-slayd: Aybsizlik prezumpsiyasi (Konstitutsiya 28-modda)\n• 2-slayd: Jinoyatning 4 ta zaruriy belgisi (obyekt, obyektiv tomon, subyekt, subyektiv tomon)\n• 3-slayd: Jinoiy javobgarlik yoshi (umumiy 16 yosh, ayrim og'ir jinoyatlar uchun 14 yosh).",
+                    link: "https://lex.uz",
+                    date: "09.11.2026"
+                }
+            ],
+            tests: [
+                {
+                    id: 301,
+                    category: "Konstitutsiyaviy huquq",
+                    question: "O'zbekiston Respublikasining yangi tahrirdagi Konstitutsiyasi nechta moddadan iborat?",
+                    options: ["128 modda", "155 modda", "140 modda", "162 modda"],
+                    correct: 1
+                },
+                {
+                    id: 302,
+                    category: "Ma'muriy huquq",
+                    question: "O'zbekiston Respublikasida ma'muriy javobgarlikka necha yoshdan boshlab tortiladi?",
+                    options: ["14 yoshdan", "18 yoshdan", "16 yoshdan", "21 yoshdan"],
+                    correct: 2
+                },
+                {
+                    id: 303,
+                    category: "Fuqarolik huquqi",
+                    question: "Fuqaroning to'la muomala layoqati necha yoshdan vujudga keladi?",
+                    options: ["16 yoshga to'lgach", "18 yoshga to'lgach", "14 yoshga to'lgach", "20 yoshga to'lgach"],
+                    correct: 1
+                },
+                {
+                    id: 304,
+                    category: "Konstitutsiyaviy huquq",
+                    question: "O'zbekiston Respublikasida davlat hokimiyatining birdan-bir manbai nima?",
+                    options: ["Oliy Majlis", "Vazirlar Mahkamasi", "Xalq", "Sud organlari"],
+                    correct: 2
+                }
+            ],
+            cases: [
+                {
+                    id: 401,
+                    category: "Fuqarolik huquqi",
+                    title: "Kazus №1: 15 yoshli o'quvchining bank omonati",
+                    situation: "9-sinf o'quvchisi 15 yoshli Jasur yozgi ta'tilda ishlagan maoshidan bir qismini bankka omonat sifatida qo'ymoqchi bo'ldi. Bank xodimi esa 'Sen hali 18 yoshga to'lmagansan, ota-onangning yozma roziligisiz omonat ochib bermaymiz' deb rad javobini berdi. Bank xodimining harakati qonuniymi?",
+                    solution: "Huquqiy yechim: Bank xodimining harakati NOQONUNIY. O'zbekiston Respublikasi Fuqarolik kodeksining 27-moddasiga muvofiq, 14 yoshdan 18 yoshgacha bo'lgan voyaga yetmaganlar ota-onalari yoki homiylarining roziligisiz o'z ish haqi, stipendiyasi va boshqa daromadlarini mustaqil tasarruf etish hamda qonunga muvofiq kredit muassasalariga omonatlar qo'yish va ularni tasarruf etish huquqiga egadirlar."
+                },
+                {
+                    id: 402,
+                    category: "Konstitutsiyaviy huquq",
+                    title: "Kazus №2: Aybsizlik prezumpsiyasi tamoyili",
+                    situation: "Fuqaro A. o'g'irlikda gumonlanib ichki ishlar organlari tomonidan ushlandi. Sud hukmi hali chiqmasdan turib, mahalliy gazeta uni 'Jinoyatchi A. qo'lga olindi' sarlavhasi ostida maqola chop etdi. Bu holatda qaysi konstitutsiyaviy tamoyil buzilgan?",
+                    solution: "Huquqiy yechim: Bu yerda O'zbekiston Respublikasi Konstitutsiyasining 28-moddasida mustahkamlangan AYBSIZLIK PREZUMPSIYASI tamoyili buzilgan. Qonunga ko'ra, jinoyat sodir etganlikda ayblanayotgan shaxs uning aybi qonunda nazarda tutilgan tartibda oshkora sud muhokamasi yo'li bilan isbotlanmaguncha va sudning qonuniy kuchga kirgan hukmi bilan aniqlanmaguncha aybsiz deb hisoblanadi."
+                }
+            ]
+        };
+
+        // =============================================================
+        // 2. LOCALSTORAGE BILAN ISHLASH (Ma'lumotlarni saqlash)
+        // =============================================================
+        const STORAGE_KEY = 'huquq_baza_ulugbek_v1';
+        let appData = loadData();
+
+        function loadData() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    return JSON.parse(saved);
+                }
+            } catch (e) {
+                console.error("Saqlangan ma'lumotlarni o'qishda xatolik:", e);
+            }
+            return JSON.parse(JSON.stringify(DEFAULT_DATA));
+        }
+
+        function saveData() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+                updateStats();
+            } catch (e) {
+                showToast("Xotiraga saqlashda xatolik yuz berdi!", "error");
+            }
+        }
+
+        // =============================================================
+        // 3. NAVIGATSIYA VA TABLARNI BOSHQARISH
+        // =============================================================
+        function switchTab(tabName) {
+            // Barcha tab kontentlarini yashirish
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            // Tanlangan tabni ko'rsatish
+            const target = document.getElementById(`tab-${tabName}`);
+            if (target) target.classList.remove('hidden');
+
+            // Menyu tugmalari dizaynini yangilash
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                if (btn.dataset.tab === tabName) {
+                    btn.classList.add('bg-amber-500', 'text-navy-950');
+                    btn.classList.remove('text-slate-300', 'hover:bg-navy-800', 'hover:text-white');
+                } else {
+                    btn.classList.remove('bg-amber-500', 'text-navy-950');
+                    btn.classList.add('text-slate-300', 'hover:bg-navy-800', 'hover:text-white');
+                }
+            });
+
+            // Mobil menyuni yopish
+            const nav = document.getElementById('main-nav');
+            if (window.innerWidth < 768) {
+                nav.classList.add('hidden');
+            }
+
+            // Kerakli bo'limlarni qayta chizish
+            if (tabName === 'tests') {
+                updateQuizCount();
+                renderTestBank();
+            }
+        }
+
+        function toggleMobileMenu() {
+            const nav = document.getElementById('main-nav');
+            nav.classList.toggle('hidden');
+            nav.classList.toggle('flex');
+            nav.classList.toggle('flex-col');
+        }
+
+        // =============================================================
+        // 4. INTERFEYSNI CHIZISH (RENDER FUNKSIYALARI)
+        // =============================================================
+        function updateStats() {
+            document.getElementById('stat-materials').textContent = appData.materials.length;
+            document.getElementById('stat-presentations').textContent = appData.presentations.length;
+            document.getElementById('stat-tests').textContent = appData.tests.length;
+            document.getElementById('stat-cases').textContent = appData.cases.length;
+        }
+
+        function renderAnnouncements() {
+            const container = document.getElementById('announcements-list');
+            if (appData.announcements.length === 0) {
+                container.innerHTML = `<p class="text-slate-400 text-sm text-center py-6">Hozircha e'lonlar mavjud emas.</p>`;
+                return;
+            }
+            container.innerHTML = appData.announcements.map(item => `
+                <div class="p-4 sm:p-5 rounded-xl border ${item.important ? 'border-amber-300 bg-amber-50/40' : 'border-slate-200 bg-slate-50/60'} flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                    <div class="space-y-1.5">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            ${item.important ? '<span class="px-2.5 py-0.5 rounded-md bg-red-600 text-white text-xs font-bold">MUHIM</span>' : '<span class="px-2.5 py-0.5 rounded-md bg-navy-800 text-white text-xs font-semibold">E\'LON</span>'}
+                            <span class="text-xs text-slate-500 font-medium"><i class="fa-regular fa-calendar mr-1"></i>${item.date}</span>
+                        </div>
+                        <h4 class="font-bold text-navy-900 text-base sm:text-lg">${escapeHTML(item.title)}</h4>
+                        <p class="text-slate-600 text-sm leading-relaxed">${escapeHTML(item.content)}</p>
+                    </div>
+                    <button onclick="deleteItem('announcements', ${item.id})" title="O'chirish" class="text-slate-400 hover:text-red-600 p-2 self-end sm:self-start transition">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function renderMaterials() {
+            const container = document.getElementById('materials-grid');
+            const searchQuery = document.getElementById('material-search').value.toLowerCase();
+            const categoryFilter = document.getElementById('material-filter').value;
+
+            const filtered = appData.materials.filter(m => {
+                const matchesSearch = m.title.toLowerCase().includes(searchQuery) || m.content.toLowerCase().includes(searchQuery);
+                const matchesCat = categoryFilter === 'all' || m.category === categoryFilter;
+                return matchesSearch && matchesCat;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full bg-white p-10 rounded-2xl border border-slate-200 text-center">
+                        <i class="fa-solid fa-folder-open text-4xl text-slate-300 mb-3"></i>
+                        <p class="text-slate-500 font-medium">So'rovingiz bo'yicha ma'ruzalar topilmadi.</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(item => `
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between gap-2 mb-3">
+                            <span class="px-3 py-1 rounded-full bg-navy-900/10 text-navy-900 text-xs font-bold">${escapeHTML(item.category)}</span>
+                            <span class="text-xs text-slate-400">${item.date}</span>
+                        </div>
+                        <h3 class="font-serif text-lg font-bold text-navy-900 mb-2 line-clamp-2">${escapeHTML(item.title)}</h3>
+                        <p class="text-slate-600 text-sm line-clamp-3 leading-relaxed mb-4">${escapeHTML(item.content)}</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+                        <button onclick="openViewer('material', ${item.id})" class="text-amber-600 hover:text-amber-700 font-bold text-sm flex items-center gap-1.5">
+                            <span>To'liq o'qish</span> <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </button>
+                        <button onclick="deleteItem('materials', ${item.id})" class="text-slate-400 hover:text-red-600 text-sm p-1.5 transition" title="O'chirish">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderPresentations() {
+            const container = document.getElementById('presentations-grid');
+            if (appData.presentations.length === 0) {
+                container.innerHTML = `<p class="col-span-full text-center text-slate-500 py-8">Hozircha taqdimotlar yuklanmagan.</p>`;
+                return;
+            }
+
+            container.innerHTML = appData.presentations.map(item => `
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between group hover:border-amber-400 transition">
+                    <div>
+                        <!-- Taqdimot yuqori vizuali -->
+                        <div class="bg-gradient-to-br from-navy-900 to-navy-800 p-6 text-white relative">
+                            <span class="inline-block px-2.5 py-1 rounded bg-amber-500 text-navy-950 text-xs font-bold mb-3">${escapeHTML(item.category)}</span>
+                            <h3 class="font-serif font-bold text-lg leading-snug">${escapeHTML(item.title)}</h3>
+                            <i class="fa-solid fa-person-chalkboard text-5xl text-white/10 absolute right-4 bottom-3"></i>
+                        </div>
+                        <div class="p-5">
+                            <p class="text-slate-600 text-sm whitespace-pre-line line-clamp-4 leading-relaxed">${escapeHTML(item.content)}</p>
+                        </div>
+                    </div>
+                    <div class="px-5 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                        <button onclick="openViewer('presentation', ${item.id})" class="bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold px-4 py-2 rounded-lg transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-expand"></i> Slaydni ochish
+                        </button>
+                        <button onclick="deleteItem('presentations', ${item.id})" class="text-slate-400 hover:text-red-600 p-1.5 transition" title="O'chirish">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderCases() {
+            const container = document.getElementById('cases-grid');
+            if (appData.cases.length === 0) {
+                container.innerHTML = `<p class="col-span-full text-center text-slate-500 py-8">Hozircha huquqiy kazuslar qo'shilmagan.</p>`;
+                return;
+            }
+
+            container.innerHTML = appData.cases.map(item => `
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col justify-between space-y-4">
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="px-3 py-1 rounded-full bg-purple-100 text-purple-800 text-xs font-bold">${escapeHTML(item.category)}</span>
+                            <button onclick="deleteItem('cases', ${item.id})" class="text-slate-400 hover:text-red-600 text-sm transition" title="O'chirish">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                        <h3 class="font-serif text-lg font-bold text-navy-900">${escapeHTML(item.title)}</h3>
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm text-slate-700 leading-relaxed">
+                            <strong class="text-navy-900 block mb-1">Vaziyat:</strong>
+                            ${escapeHTML(item.situation)}
+                        </div>
+                        <!-- Yashirin huquqiy yechim -->
+                        <div id="case-sol-${item.id}" class="hidden bg-emerald-50 p-4 rounded-xl border border-emerald-200 text-sm text-emerald-950 leading-relaxed fade-in">
+                            ${escapeHTML(item.solution)}
+                        </div>
+                    </div>
+                    <button onclick="toggleCaseSolution(${item.id}, this)" class="w-full py-2.5 px-4 rounded-xl bg-navy-900 hover:bg-navy-800 text-white font-semibold text-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-eye"></i> <span>Huquqiy yechimni ko'rish</span>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function toggleCaseSolution(id, btn) {
+            const box = document.getElementById(`case-sol-${id}`);
+            const isHidden = box.classList.contains('hidden');
+            if (isHidden) {
+                box.classList.remove('hidden');
+                btn.innerHTML = `<i class="fa-solid fa-eye-slash"></i> <span>Yechimni yashirish</span>`;
+                btn.classList.replace('bg-navy-900', 'bg-slate-700');
+            } else {
+                box.classList.add('hidden');
+                btn.innerHTML = `<i class="fa-solid fa-eye"></i> <span>Huquqiy yechimni ko'rish</span>`;
+                btn.classList.replace('bg-slate-700', 'bg-navy-900');
+            }
+        }
+
+        // =============================================================
+        // 5. UNIVERSAL QO'SHISH VA O'CHIRISH MODALLARI
+        // =============================================================
+        function openAddModal(defaultType = 'material') {
+            document.getElementById('add-type').value = defaultType;
+            document.getElementById('universal-add-form').reset();
+            document.getElementById('add-type').value = defaultType;
+            updateAddModalFields();
+            document.getElementById('add-modal').classList.remove('hidden');
+        }
+
+        function closeAddModal() {
+            document.getElementById('add-modal').classList.add('hidden');
+        }
+
+        function updateAddModalFields() {
+            const type = document.getElementById('add-type').value;
+            const catWrap = document.getElementById('field-category-wrap');
+            const extraWrap = document.getElementById('field-extra-wrap');
+            const labelTitle = document.getElementById('label-title');
+            const labelContent = document.getElementById('label-content');
+            const labelExtra = document.getElementById('label-extra');
+            const addExtra = document.getElementById('add-extra');
+
+            if (type === 'announcement') {
+                catWrap.classList.add('hidden');
+                extraWrap.classList.add('hidden');
+                labelTitle.textContent = "E'lon sarlavhasi";
+                labelContent.textContent = "E'lon matni";
+            } else if (type === 'presentation') {
+                catWrap.classList.remove('hidden');
+                extraWrap.classList.remove('hidden');
+                labelTitle.textContent = "Taqdimot mavzusi";
+                labelContent.textContent = "Slaydlar rejasi / Qisqacha tavsif";
+                labelExtra.textContent = "Taqdimot fayli yoki tashqi havola (ixtiyoriy)";
+                addExtra.placeholder = "Masalan: https://lex.uz yoki Google Slides havolasi";
+                addExtra.required = false;
+            } else if (type === 'case') {
+                catWrap.classList.remove('hidden');
+                extraWrap.classList.remove('hidden');
+                labelTitle.textContent = "Kazus nomi";
+                labelContent.textContent = "Muammoli vaziyat tavsifi";
+                labelExtra.textContent = "Qonuniy yechim va kodeks moddasi";
+                addExtra.placeholder = "Vaziyatning huquqiy tahlili va asoslangan moddani yozing...";
+                addExtra.required = true;
+            } else {
+                catWrap.classList.remove('hidden');
+                extraWrap.classList.add('hidden');
+                labelTitle.textContent = "Ma'ruza mavzusi";
+                labelContent.textContent = "Ma'ruza matni va asosiy qoidalar";
+            }
+        }
+
+        function handleUniversalSubmit(e) {
+            e.preventDefault();
+            const type = document.getElementById('add-type').value;
+            const category = document.getElementById('add-category').value;
+            const title = document.getElementById('add-title').value.trim();
+            const content = document.getElementById('add-content').value.trim();
+            const extra = document.getElementById('add-extra').value.trim();
+            const today = new Date().toLocaleDateString('uz-UZ');
+            const newId = Date.now();
+
+            if (type === 'announcement') {
+                appData.announcements.unshift({ id: newId, title, content, date: today, important: true });
+                renderAnnouncements();
+                switchTab('home');
+                showToast("Yangi e'lon muvaffaqiyatli joylandi!");
+            } else if (type === 'material') {
+                appData.materials.unshift({ id: newId, category, title, content, date: today });
+                renderMaterials();
+                switchTab('materials');
+                showToast("Ma'ruza bazaga qo'shildi!");
+            } else if (type === 'presentation') {
+                appData.presentations.unshift({ id: newId, category, title, content, link: extra, date: today });
+                renderPresentations();
+                switchTab('presentations');
+                showToast("Taqdimot muvaffaqiyatli qo'shildi!");
+            } else if (type === 'case') {
+                appData.cases.unshift({ id: newId, category, title, situation: content, solution: extra });
+                renderCases();
+                switchTab('cases');
+                showToast("Yangi huquqiy kazus qo'shildi!");
+            }
+
+            saveData();
+            closeAddModal();
+        }
+
+        function deleteItem(collection, id) {
+            appData[collection] = appData[collection].filter(item => item.id !== id);
+            saveData();
+            if (collection === 'announcements') renderAnnouncements();
+            if (collection === 'materials') renderMaterials();
+            if (collection === 'presentations') renderPresentations();
+            if (collection === 'cases') renderCases();
+            if (collection === 'tests') {
+                renderTestBank();
+                updateQuizCount();
+            }
+            showToast("Ma'lumot o'chirildi.");
+        }
+
+        // =============================================================
+        // 6. TO'LIQ O'QISH VA SLAYD NAMOYISHI (VIEWER MODAL)
+        // =============================================================
+        function openViewer(type, id) {
+            const list = type === 'material' ? appData.materials : appData.presentations;
+            const item = list.find(x => x.id === id);
+            if (!item) return;
+
+            document.getElementById('viewer-badge').textContent = item.category;
+            document.getElementById('viewer-date').textContent = item.date;
+            document.getElementById('viewer-title').textContent = item.title;
+            document.getElementById('viewer-body').textContent = item.content;
+
+            const linkBox = document.getElementById('viewer-link-box');
+            if (type === 'presentation' && item.link) {
+                linkBox.classList.remove('hidden');
+                document.getElementById('viewer-link-text').textContent = item.link;
+                document.getElementById('viewer-external-btn').href = item.link.startsWith('http') ? item.link : 'https://' + item.link;
+            } else {
+                linkBox.classList.add('hidden');
+            }
+
+            document.getElementById('viewer-modal').classList.remove('hidden');
+        }
+
+        function closeViewerModal() {
+            document.getElementById('viewer-modal').classList.add('hidden');
+        }
+
+        // =============================================================
+        // 7. TESTLAR TUZISH VA YECHISH MANTIQI
+        // =============================================================
+        let currentQuizIndex = 0;
+        let userAnswers = [];
+        let selectedOption = null;
+
+        function switchTestMode(mode) {
+            const solveArea = document.getElementById('test-solve-area');
+            const createArea = document.getElementById('test-create-area');
+            const btnSolve = document.getElementById('btn-mode-solve');
+            const btnCreate = document.getElementById('btn-mode-create');
+
+            if (mode === 'solve') {
+                solveArea.classList.remove('hidden');
+                createArea.classList.add('hidden');
+                btnSolve.classList.add('bg-navy-900', 'text-white', 'shadow');
+                btnSolve.classList.remove('text-slate-600');
+                btnCreate.classList.remove('bg-navy-900', 'text-white', 'shadow');
+                btnCreate.classList.add('text-slate-600');
+                updateQuizCount();
+            } else {
+                solveArea.classList.add('hidden');
+                createArea.classList.remove('hidden');
+                btnCreate.classList.add('bg-navy-900', 'text-white', 'shadow');
+                btnCreate.classList.remove('text-slate-600');
+                btnSolve.classList.remove('bg-navy-900', 'text-white', 'shadow');
+                btnSolve.classList.add('text-slate-600');
+                renderTestBank();
+            }
+        }
+
+        function updateQuizCount() {
+            document.getElementById('quiz-total-count').textContent = appData.tests.length;
+        }
+
+        function handleCreateTest(e) {
+            e.preventDefault();
+            const category = document.getElementById('new-test-category').value;
+            const question = document.getElementById('new-test-question').value.trim();
+            const options = [
+                document.getElementById('opt-0').value.trim(),
+                document.getElementById('opt-1').value.trim(),
+                document.getElementById('opt-2').value.trim(),
+                document.getElementById('opt-3').value.trim()
+            ];
+            const correct = parseInt(document.getElementById('new-test-correct').value, 10);
+
+            appData.tests.push({
+                id: Date.now(),
+                category,
+                question,
+                options,
+                correct
+            });
+
+            saveData();
+            e.target.reset();
+            renderTestBank();
+            updateQuizCount();
+            showToast("Yangi test savoli bazaga qo'shildi!");
+        }
+
+        function renderTestBank() {
+            const list = document.getElementById('test-bank-list');
+            document.getElementById('bank-count-badge').textContent = `${appData.tests.length} ta`;
+            const letters = ['A', 'B', 'C', 'D'];
+
+            if (appData.tests.length === 0) {
+                list.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Test bazasi bo'sh.</p>`;
+                return;
+            }
+
+            list.innerHTML = appData.tests.map((t, idx) => `
+                <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 text-xs space-y-1.5">
+                    <div class="flex items-start justify-between gap-2">
+                        <span class="font-bold text-navy-900">${idx + 1}. ${escapeHTML(t.question)}</span>
+                        <button onclick="deleteItem('tests', ${t.id})" class="text-slate-400 hover:text-red-600 shrink-0" title="O'chirish">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                    <p class="text-emerald-700 font-semibold">
+                        <i class="fa-solid fa-check-circle mr-1"></i> To'g'ri javob: ${letters[t.correct]}) ${escapeHTML(t.options[t.correct])}
+                    </p>
+                </div>
+            `).join('');
+        }
+
+        function startQuiz() {
+            if (appData.tests.length === 0) {
+                showToast("Test boshlash uchun kamida 1 ta savol qo'shing!", "error");
+                return;
+            }
+            currentQuizIndex = 0;
+            userAnswers = [];
+            document.getElementById('quiz-start-screen').classList.add('hidden');
+            document.getElementById('quiz-result-screen').classList.add('hidden');
+            document.getElementById('quiz-active-screen').classList.remove('hidden');
+            renderQuestion();
+        }
+
+        function resetQuiz() {
+            document.getElementById('quiz-active-screen').classList.add('hidden');
+            document.getElementById('quiz-result-screen').classList.add('hidden');
+            document.getElementById('quiz-start-screen').classList.remove('hidden');
+        }
+
+        function renderQuestion() {
+            selectedOption = null;
+            const total = appData.tests.length;
+            const q = appData.tests[currentQuizIndex];
+            const letters = ['A', 'B', 'C', 'D'];
+
+            document.getElementById('quiz-progress-text').textContent = `Savol: ${currentQuizIndex + 1} / ${total}`;
+            document.getElementById('quiz-category-badge').textContent = q.category;
+            document.getElementById('quiz-progress-bar').style.width = `${((currentQuizIndex + 1) / total) * 100}%`;
+            document.getElementById('quiz-question-text').textContent = q.question;
+
+            const nextBtn = document.getElementById('quiz-next-btn');
+            nextBtn.disabled = true;
+            nextBtn.innerHTML = currentQuizIndex === total - 1
+                ? `Testni yakunlash <i class="fa-solid fa-check ml-1"></i>`
+                : `Keyingi savol <i class="fa-solid fa-chevron-right ml-1"></i>`;
+
+            const optsContainer = document.getElementById('quiz-options-container');
+            optsContainer.innerHTML = q.options.map((opt, idx) => `
+                <button type="button" onclick="selectQuizOption(${idx})" class="quiz-opt-btn w-full text-left p-4 rounded-xl border-2 border-slate-200 hover:border-amber-400 transition flex items-center gap-3 font-medium text-sm text-slate-800">
+                    <span class="w-8 h-8 rounded-lg bg-slate-100 text-navy-900 font-bold flex items-center justify-center shrink-0">${letters[idx]}</span>
+                    <span>${escapeHTML(opt)}</span>
+                </button>
+            `).join('');
+        }
+
+        function selectQuizOption(idx) {
+            selectedOption = idx;
+            document.getElementById('quiz-next-btn').disabled = false;
+            document.querySelectorAll('.quiz-opt-btn').forEach((btn, i) => {
+                if (i === idx) {
+                    btn.classList.add('border-navy-900', 'bg-navy-900/5');
+                    btn.classList.remove('border-slate-200');
+                } else {
+                    btn.classList.remove('border-navy-900', 'bg-navy-900/5');
+                    btn.classList.add('border-slate-200');
+                }
+            });
+        }
+
+        function nextQuestion() {
+            if (selectedOption === null) return;
+            userAnswers.push(selectedOption);
+            if (currentQuizIndex < appData.tests.length - 1) {
+                currentQuizIndex++;
+                renderQuestion();
+            } else {
+                showQuizResults();
+            }
+        }
+
+        function showQuizResults() {
+            document.getElementById('quiz-active-screen').classList.add('hidden');
+            document.getElementById('quiz-result-screen').classList.remove('hidden');
+
+            let score = 0;
+            const total = appData.tests.length;
+            const letters = ['A', 'B', 'C', 'D'];
+
+            const reviewHTML = appData.tests.map((q, idx) => {
+                const userAns = userAnswers[idx];
+                const isCorrect = userAns === q.correct;
+                if (isCorrect) score++;
+
+                return `
+                    <div class="p-4 rounded-xl border ${isCorrect ? 'border-emerald-200 bg-emerald-50/50' : 'border-red-200 bg-red-50/50'} text-sm space-y-1">
+                        <p class="font-bold text-navy-900">${idx + 1}. ${escapeHTML(q.question)}</p>
+                        <p class="${isCorrect ? 'text-emerald-700' : 'text-red-700'} font-medium">
+                            Sizning javobingiz: ${letters[userAns]}) ${escapeHTML(q.options[userAns])}
+                            ${isCorrect ? '<i class="fa-solid fa-check ml-1"></i>' : '<i class="fa-solid fa-xmark ml-1"></i>'}
+                        </p>
+                        ${!isCorrect ? `<p class="text-emerald-800 font-semibold">To'g'ri javob: ${letters[q.correct]}) ${escapeHTML(q.options[q.correct])}</p>` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            const percent = Math.round((score / total) * 100);
+            document.getElementById('result-score-text').textContent = `Natija: ${score} / ${total} (${percent}%)`;
+            document.getElementById('result-feedback').textContent = percent >= 80
+                ? "Barakalla! Huquq fanidan bilimlaringiz a'lo darajada."
+                : percent >= 50
+                    ? "Yaxshi natija! Ma'ruzalar bo'limini yana bir bor takrorlab chiqish tavsiya etiladi."
+                    : "Ko'proq mashq qilish kerak. Ma'ruzalar va kazuslarni o'rganib qayta urinib ko'ring.";
+
+            document.getElementById('quiz-review-list').innerHTML = reviewHTML;
+        }
+
+        // =============================================================
+        // 8. YORDAMCHI FUNKSIYALAR (XSS himoya va Bildirishnomalar)
+        // =============================================================
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, tag => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                "'": '&#39;',
+                '"': '&quot;'
+            }[tag]));
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bg = type === 'error' ? 'bg-red-600' : 'bg-navy-900 border-l-4 border-amber-400';
+            toast.className = `${bg} text-white px-5 py-3.5 rounded-xl shadow-xl text-sm font-medium flex items-center gap-2.5 fade-in`;
+            toast.innerHTML = `<i class="fa-solid ${type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check text-amber-400'}"></i><span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, 3200);
+        }
+
+        // Sahifa yuklanganda barcha bo'limlarni ishga tushirish
+        window.onload = function() {
+            updateStats();
+            renderAnnouncements();
+            renderMaterials();
+            renderPresentations();
+            renderCases();
+            updateQuizCount();
+            switchTab('home');
+        };
+    </script>
+</body>
+</html>
